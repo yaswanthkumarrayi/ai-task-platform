@@ -23,10 +23,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: |
-            frontend/package-lock.json
-            backend/package-lock.json
 
       - name: Lint Backend
         working-directory: backend
@@ -155,6 +151,8 @@ jobs:
           cd infra-repo
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
+          git config --global credential.helper store
+          echo "https://oauth2:${GH_TOKEN}@github.com" > ~/.git-credentials
           git add k8s/backend.yaml k8s/worker.yaml k8s/frontend.yaml
           git diff --staged --quiet || git commit -m "chore: update image tags to ${{ needs.build-and-push.outputs.image_tag }} [skip ci]"
-          git push origin main
+          git push -u origin main
