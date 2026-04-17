@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Play, Trash2, RefreshCw,
-  Clock, Loader2, AlertCircle, Cpu, FileText
+  Loader2, AlertCircle, Cpu, FileText
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { tasksAPI } from '../api';
