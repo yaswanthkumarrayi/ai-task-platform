@@ -117,39 +117,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ─── 3. Update Infra Repo with New Image Tags ──────────────────────────────
-  update-infra:
-    name: Update Infra Image Tags
+  # ─── 3. Summary ─────────────────────────────────────────────────────────────
+  summary:
+    name: Build Complete
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Checkout infra repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.INFRA_REPOSITORY }}
-          token: ${{ secrets.GH_PAT }}
-          path: infra-repo
-
-      - name: Update image tags in K8s manifests
-        env:
-          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
-          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+      - name: Success Message
         run: |
-          cd infra-repo/k8s
-          # Replace complete image lines regardless of existing placeholder/tag.
-          sed -i -E "s|(^[[:space:]]*image:[[:space:]]*).*$|\1${DOCKER_USER}/ai-task-backend:${IMAGE_TAG}|" backend.yaml
-          sed -i -E "s|(^[[:space:]]*image:[[:space:]]*).*$|\1${DOCKER_USER}/ai-task-worker:${IMAGE_TAG}|" worker.yaml
-          sed -i -E "s|(^[[:space:]]*image:[[:space:]]*).*$|\1${DOCKER_USER}/ai-task-frontend:${IMAGE_TAG}|" frontend.yaml
-          echo "Updated manifests to tag: ${IMAGE_TAG}"
-          grep -E "image:" backend.yaml worker.yaml frontend.yaml
-
-      - name: Commit and push updated manifests
-        run: |
-          cd infra-repo
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git config --list | grep credential || true
-          git add k8s/backend.yaml k8s/worker.yaml k8s/frontend.yaml
-          git diff --staged --quiet || git commit -m "chore: update image tags to ${{ needs.build-and-push.outputs.image_tag }} [skip ci]"
-          git -c http.extraheader="Authorization: Bearer ${{ secrets.GH_PAT }}" push origin main || echo "Push failed, but continuing..."
+          echo "✅ Pipeline successful!"
+          echo "Docker images pushed:"
+          echo "  - ${{ secrets.DOCKER_USERNAME }}/ai-task-backend:${{ needs.build-and-push.outputs.image_tag }}"
+          echo "  - ${{ secrets.DOCKER_USERNAME }}/ai-task-worker:${{ needs.build-and-push.outputs.image_tag }}"
+          echo "  - ${{ secrets.DOCKER_USERNAME }}/ai-task-frontend:${{ needs.build-and-push.outputs.image_tag }}"
+          echo ""
+          echo "Also tagged as 'latest'"
