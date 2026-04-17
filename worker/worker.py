@@ -42,16 +42,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(f"worker.{WORKER_ID}")
 
+
 # ─── Graceful Shutdown ─────────────────────────────────────────────────────────
 shutdown_requested = False
+
 
 def handle_signal(signum, _frame):
     global shutdown_requested
     logger.info(f"Signal {signum} received. Finishing current job then shutting down...")
     shutdown_requested = True
 
+
 signal.signal(signal.SIGTERM, handle_signal)
 signal.signal(signal.SIGINT, handle_signal)
+
 
 # ─── Operations ───────────────────────────────────────────────────────────────
 def process_operation(operation: str, input_text: str) -> dict:
